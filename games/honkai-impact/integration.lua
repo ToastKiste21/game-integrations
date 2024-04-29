@@ -55,22 +55,19 @@ local function get_jadeite_metadata()
     "https://codeberg.org/mkrsym1/jadeite/raw/branch/master/metadata.json",
     "https://notabug.org/mkrsym1/jadeite-mirror/raw/master/metadata.json"
   }
+  local errors = {}
 
   for _, uri in pairs(uris) do
-    if jadeite_metadata ~= nil then
-      break
-    end
-
     local response = v1_network_fetch(uri)
-
-    if not response["ok"] then
-      error("Failed to request jadeite metadata (code " .. response["status"] .. "): " .. response["statusText"])
+    if response["ok"] then
+      jadeite_metadata = response.json()
+      return jadeite_metadata
+    else
+      table.insert(errors, "Failed to request jadeite metadata (code " .. response["status"] .. "): " .. response["statusText"])
     end
-
-    jadeite_metadata = response.json()
   end
 
-  return jadeite_metadata
+  error(table.concat(errors, "\n"))
 end
 
 local function get_jadeite_download()
