@@ -50,25 +50,44 @@ end
 local jadeite_metadata = nil
 local jadeite_download = nil
 
+local jadeite_metadata = nil
+local jadeite_download = nil
+
 local function get_jadeite_metadata()
   local uris = {
     "https://codeberg.org/mkrsym1/jadeite/raw/branch/master/metadata.json",
     "https://notabug.org/mkrsym1/jadeite-mirror/raw/master/metadata.json"
   }
+  
   local errors = {}
 
-  for _, uri in pairs(uris) do
+  for _, uri in ipairs(uris) do
     local response = v1_network_fetch(uri)
+
     if response["ok"] then
       jadeite_metadata = response.json()
       return jadeite_metadata
     else
-      table.insert(errors, "Failed to request jadeite metadata (code " .. response["status"] .. "): " .. response["statusText"])
+      table.insert(errors, "Failed to request jadeite metadata from " .. uri .. " (code " .. response["status"] .. "): " .. response["statusText"])
     end
   end
 
   error(table.concat(errors, "\n"))
 end
+
+local function get_jadeite_download()
+  local uri = "https://codeberg.org/api/v1/repos/mkrsym1/jadeite/releases/latest"
+
+  local response = v1_network_fetch(uri)
+
+  if response["ok"] then
+    jadeite_download = response.json()
+    return jadeite_download
+  else
+    error("Failed to request jadeite releases (code " .. response["status"] .. "): " .. response["statusText"])
+  end
+end
+
 
 local function get_jadeite_download()
   local uri = "https://codeberg.org/api/v1/repos/mkrsym1/jadeite/releases/latest"
