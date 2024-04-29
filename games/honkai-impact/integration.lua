@@ -2,48 +2,46 @@ local game_api_cache = {}
 local social_api_cache = {}
 
 local function game_api(edition)
-  if game_api_cache[edition] == nil then
-    local uri = {
-      ["global"] = "https://sdk-os-static.hoyoverse.com/bh3_global/mdk/launcher/api/resource?key=gcStgarh&launcher_id=10",
-      ["sea"]    = "https://sdk-os-static.hoyoverse.com/bh3_global/mdk/launcher/api/resource?launcher_id=9",
-      ["china"]  = "https://bh3-launcher-static.mihoyo.com/bh3_cn/mdk/launcher/api/resource?launcher_id=4",
-      ["taiwan"] = "https://sdk-os-static.hoyoverse.com/bh3_global/mdk/launcher/api/resource?launcher_id=8",
-      ["korea"]  = "https://sdk-os-static.hoyoverse.com/bh3_global/mdk/launcher/api/resource?launcher_id=11",
-      ["japan"]  = "https://sdk-os-static.hoyoverse.com/bh3_global/mdk/launcher/api/resource?key=ojevZ0EyIyZNCy4n&launcher_id=19"
-    }
+  local uris = {
+    ["global"] = "https://sdk-os-static.hoyoverse.com/bh3_global/mdk/launcher/api/resource?key=gcStgarh&launcher_id=10",
+    ["sea"]    = "https://sdk-os-static.hoyoverse.com/bh3_global/mdk/launcher/api/resource?launcher_id=9",
+    ["china"]  = "https://bh3-launcher-static.mihoyo.com/bh3_cn/mdk/launcher/api/resource?launcher_id=4",
+    ["taiwan"] = "https://sdk-os-static.hoyoverse.com/bh3_global/mdk/launcher/api/resource?launcher_id=8",
+    ["korea"]  = "https://sdk-os-static.hoyoverse.com/bh3_global/mdk/launcher/api/resource?launcher_id=11",
+    ["japan"]  = "https://sdk-os-static.hoyoverse.com/bh3_global/mdk/launcher/api/resource?key=ojevZ0EyIyZNCy4n&launcher_id=19"
+  }
 
-    local response = v1_network_fetch(uri[edition])
+  local errors = {}
 
-    if not response["ok"] then
-      error("Failed to request game API (code " .. response["status"] .. "): " .. response["statusText"])
-    end
-
-    game_api_cache[edition] = response.json()
+  local response = v1_network_fetch(uris[edition])
+  if not response["ok"] then
+    table.insert(errors, "Failed to request game API (code " .. response["status"] .. "): " .. response["statusText"])
+    error(table.concat(errors, "\n"))
   end
 
+  game_api_cache[edition] = response.json()
   return game_api_cache[edition]
 end
 
 local function social_api(edition)
-  if social_api_cache[edition] == nil then
-    local uri = {
-      ["global"] = "https://sdk-os-static.hoyoverse.com/bh3_global/mdk/launcher/api/content?filter_adv=true&key=gcStgarh&launcher_id=10&language=en-us",
-      ["sea"]    = "https://sdk-os-static.hoyoverse.com/bh3_global/mdk/launcher/api/content?filter_adv=true&key=gcStgarh&launcher_id=10&language=en-us",
-      ["china"]  = "https://bh3-launcher-static.mihoyo.com/bh3_cn/mdk/launcher/api/content?filter_adv=true&launcher_id=4&language=zh-cn",
-      ["taiwan"] = "https://sdk-os-static.hoyoverse.com/bh3_global/mdk/launcher/api/content?filter_adv=true&key=gcStgarh&launcher_id=10&language=en-us",
-      ["korea"]  = "https://sdk-os-static.hoyoverse.com/bh3_global/mdk/launcher/api/content?filter_adv=true&key=gcStgarh&launcher_id=10&language=en-us",
-      ["japan"]  = "https://sdk-os-static.hoyoverse.com/bh3_global/mdk/launcher/api/content?filter_adv=true&key=gcStgarh&launcher_id=10&language=en-us"
-    }
+  local uris = {
+    ["global"] = "https://sdk-os-static.hoyoverse.com/bh3_global/mdk/launcher/api/content?filter_adv=true&key=gcStgarh&launcher_id=10&language=en-us",
+    ["sea"]    = "https://sdk-os-static.hoyoverse.com/bh3_global/mdk/launcher/api/content?filter_adv=true&key=gcStgarh&launcher_id=10&language=en-us",
+    ["china"]  = "https://bh3-launcher-static.mihoyo.com/bh3_cn/mdk/launcher/api/content?filter_adv=true&launcher_id=4&language=zh-cn",
+    ["taiwan"] = "https://sdk-os-static.hoyoverse.com/bh3_global/mdk/launcher/api/content?filter_adv=true&key=gcStgarh&launcher_id=10&language=en-us",
+    ["korea"]  = "https://sdk-os-static.hoyoverse.com/bh3_global/mdk/launcher/api/content?filter_adv=true&key=gcStgarh&launcher_id=10&language=en-us",
+    ["japan"]  = "https://sdk-os-static.hoyoverse.com/bh3_global/mdk/launcher/api/content?filter_adv=true&key=gcStgarh&launcher_id=10&language=en-us"
+  }
 
-    local response = v1_network_fetch(uri[edition])
+  local errors = {}
 
-    if not response["ok"] then
-      error("Failed to request social API (code " .. response["status"] .. "): " .. response["statusText"])
-    end
-
-    social_api_cache[edition] = response.json()
+  local response = v1_network_fetch(uris[edition])
+  if not response["ok"] then
+    table.insert(errors, "Failed to request social API (code " .. response["status"] .. "): " .. response["statusText"])
+    error(table.concat(errors, "\n"))
   end
 
+  social_api_cache[edition] = response.json()
   return social_api_cache[edition]
 end
 
@@ -56,43 +54,33 @@ local function get_jadeite_metadata()
     "https://notabug.org/mkrsym1/jadeite-mirror/raw/master/metadata.json"
   }
 
-  local requests = {}
-  for _, uri in pairs(uris) do
-    local response = v1_network_fetch(uri)
-    table.insert(requests, response)
+  local errors = {}
 
+  for _, uri in ipairs(uris) do
+    local response = v1_network_fetch(uri)
     if response["ok"] then
       jadeite_metadata = response.json()
-      break
+      return jadeite_metadata
+    else
+      table.insert(errors, "Failed to request jadeite metadata (code " .. response["status"] .. "): " .. response["statusText"])
     end
   end
 
-  if not jadeite_metadata then
-    local msg = "Jadeite metadata requests failed:\n"
-    for i, r in ipairs(requests) do
-      msg = string.format("%s\n%s (code %s): %s" msg, uris[i], r["status"], r["statusText"])
-    end
-
-    error(msg)
-  end
-
-  return jadeite_metadata
+  error(table.concat(errors, "\n"))
 end
 
 local function get_jadeite_download()
   local uri = "https://codeberg.org/api/v1/repos/mkrsym1/jadeite/releases/latest"
+  local errors = {}
 
-  if not jadeite_download then
-    local response = v1_network_fetch(uri)
-
-    if not response["ok"] then
-      error("Failed to request jadeite releases (code " .. response["status"] .. "): " .. response["statusText"])
-    end
-
+  local response = v1_network_fetch(uri)
+  if response["ok"] then
     jadeite_download = response.json()
+    return jadeite_download
+  else
+    table.insert(errors, "Failed to request jadeite releases (code " .. response["status"] .. "): " .. response["statusText"])
+    error(table.concat(errors, "\n"))
   end
-
-  return jadeite_download
 end
 
 -- Convert raw number string into table of version numbers
