@@ -66,8 +66,11 @@ local function get_jadeite_metadata()
     end
   end
 
-  error(table.concat(errors, "\n"))
+  if #errors > 0 then
+    print(table.concat(errors, "\n")) -- Statt `error()`, `print()` verwenden, um das Programm nicht zu beenden
+  end
 end
+
 
 local function get_jadeite_download()
   local uri = "https://codeberg.org/api/v1/repos/mkrsym1/jadeite/releases/latest"
